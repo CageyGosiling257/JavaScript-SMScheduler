@@ -7,9 +7,10 @@ import json
 import datetime
 import pytz
 import time
+import datetime
 from data_queue import data_queue
 
-os.chdir(r'C:\Users\davea\OneDrive\Desktop\SMS JavaScript Project')
+os.chdir(r'/home/dfreeman/Desktop/SMSScheduler/JavaScript-SMScheduler/Backend')
 
 # Creates spreadsheet
 ss = ezsheets.Spreadsheet('1YhI6SSaoHEAPsxS8Qnea_tZ9EpOeN-zbLJB6ho8I9lE')
@@ -18,6 +19,7 @@ unfilteredCarrierEmails = SMSList.getColumn(4) # Retreives column of carrier ema
 filteredUSCarrierEmails = []
 cell = 251 # Cell row number with 1st U.S. number
 totalReminders = []
+
 
 # Filters column 4 to only include U.S. Carriers
 while (cell < 337):
@@ -53,6 +55,27 @@ def sendText (phone, head, body):
         ezgmail.send("7706174970@txt.att.net",head,body)
         print(f"Email Sent YAY! This is the {counter}\n\n")
         counter += 1
+        
+# Resets the DateTime variable of a message after it is sent out
+def resetDateTime():
+    for entry in totalReminders:
+        if(entry["interval"] == "No Repeats"):
+            totalReminders.remove(entry)
+        elif (entry["inteval"] == "Every Minute"):
+            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(seconds=60)
+        elif (entry["inteval"] == "Every Hour"):
+            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(minutes=60)
+        elif (entry["inteval"] == "Every 12 Hours"):
+            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(hours=12)
+        elif (entry["inteval"] == "Daily (24 Hours)"):
+            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(hours=24)
+        elif (entry["inteval"] == "Every 2 days (48 hours)"):
+            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(hours=48)
+        elif (entry["inteval"] == "Weekly (7 Days)"):
+            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(days=7)
+    
+    
+    
 
 # Sends out text message for each reminder that the user creates
 def sendMessages():    
@@ -66,11 +89,12 @@ def sendMessages():
             currentTime = datetime.now(timezone)
         
         sendText(entry["phone"], entry["message"], entry["message"])
-        # INSERT FUNCTION CALL TO RESET DATETIME OF REPEATED INTERVALS
+        resetDateTime()
         sortTotalReminders()
 
 # Constantly is sending out text messages whenever their dateTimes come due
 sendOutThread = threading.Thread(target=sendMessages())
+sendOutThread.start()
 
 
 

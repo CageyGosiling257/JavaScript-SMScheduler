@@ -1,10 +1,12 @@
 from flask import Flask, render_template, redirect, url_for, Request
 import flask
 import smsGateway
+import subprocess
 import json
 from data_queue import data_queue
 
-app = Flask(__name__) # Creates Flask object
+app = Flask(__name__, template_folder='/home/dfreeman/Desktop/SMSScheduler/JavaScript-SMScheduler/templates', 
+            static_folder='/home/dfreeman/Desktop/SMSScheduler/JavaScript-SMScheduler/static') # Creates Flask object
 
 totalData = [] # Stores a list of dictionaries containing each reminder the user creates
 
@@ -19,10 +21,11 @@ def sendText():
 
 @app.route('/')
 def index():
+    subprocess.Popen(['python', 'smsGateway.py'])
     return render_template('index.html')
 
 
-@app.route('/submit', methods=['POST', 'GET'])
+@app.route('/submit', methods=['POST'])
 def submit():
     if flask.request.method == 'POST':
         phone = flask.request.form['phoneNumber']
