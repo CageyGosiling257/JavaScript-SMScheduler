@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, Request
 import flask
 import smsGateway
 import subprocess
+import threading
 import json
 from data_queue import data_queue
 import logging
@@ -16,10 +17,11 @@ totalData = [] # Stores a list of dictionaries containing each reminder the user
 
 
 # Sends reminder information to smsGateway.py file to be sent out
-def sendText():
+def callSMSGateway():
     global totalData
     json_data = json.dumps(totalData)
     data_queue.put(json_data)
+    subprocess.run(['python', 'smsGateway.py', json_data])
     
     
 @app.route('/')
@@ -38,10 +40,12 @@ def submit():
         interval = flask.request.form['interval']
         data = {"phone": phone, "message": message, "dateTime": dateTime, "interval": interval}
         totalData.append(data)
-        sendText()
-        subprocess.Popen(['python', 'smsGateway.py'])
+        print(totalData)
         app.logger.info('The other python program has begun!')
+        if sendoutTextThread is None or not sendoutTextThread.is_alive():
+            sendoutTextThread.start()
     return display_table()
+
 
 @app.route('/table')
 def display_table():
@@ -51,5 +55,6 @@ def display_table():
 
 
 if __name__ == '__main__':
+    sendoutTextThread = threading.Thread(target=callSMSGateway)
     app.run(debug=True)
 
