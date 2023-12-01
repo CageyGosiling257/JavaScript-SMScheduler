@@ -8,11 +8,12 @@ import datetime
 import pytz
 import time
 import sys
-from data_queue import data_queue
+from dataqueue import data_queue
 
+# Child directory to create API tokens
 os.chdir(r'/home/dfreeman/Desktop/SMSScheduler/JavaScript-SMScheduler/Backend')
 
-# Creates spreadsheet
+# Creates spreadsheet that contains data for SMS Gateway Emails
 ss = ezsheets.Spreadsheet('1YhI6SSaoHEAPsxS8Qnea_tZ9EpOeN-zbLJB6ho8I9lE')
 
 SMSList = ss[0] # Creates specific sheet
@@ -21,13 +22,14 @@ unfilteredCarrierEmails = SMSList.getColumn(4) # Retreives column of carrier ema
 
 filteredUSCarrierEmails = [] # Stores cells containing only U.S.A carriers
 
-filteredSMSList = []
+filteredSMSList = [] # Holds list of U.S. carrier emails containing user's phone number
 
 cell = 251 # Cell row number with 1st U.S. number
 
 # Creates Eastern timezone for times
 timezone = pytz.timezone('US/Eastern')
 
+# List that holds input data containing information about the reminder from the website
 totalReminders = []
 
 # Filters column 4 to only include U.S. Carriers
@@ -35,10 +37,10 @@ while (cell < 337):
     filteredUSCarrierEmails.append(unfilteredCarrierEmails[cell])
     cell += 1
 
-# Processes data input
+# Retrieves data input and stores it in totalReminders so it can be used across the file
 def processDataInput(jsonData):
     global totalReminders
-    totalReminders = json.loads(jsonData) # Data recieved is the total_data variable
+    totalReminders = json.loads(jsonData) # Input json data is turned into a list of dictionaries
 
 
 # Sorts the dynamic list of reminders by dateTime
@@ -46,8 +48,8 @@ def sortTotalReminders():
     global totalReminders
     sorted(totalReminders, key=lambda x: (x['dateTime']))
 
+# Applies inputted phone number to SMSGateway email
 def addPhoneToEmail(phone):
-    # Applies inputted phone number to SMSGateway email
     for carrier in filteredUSCarrierEmails:
         if(carrier.startswith("##########")):
             carrierEmail = phone + carrier[10:]
@@ -55,14 +57,14 @@ def addPhoneToEmail(phone):
 
 
 # Adds user's phone number to SMS email and then sends the SMS email      
-def sendText (head, body):
+def sendText (body):
     counter = 0
     
     # Sends email to SMS carriers
     for email in filteredSMSList:
         print(email)
-        ezgmail.send(email,head,body)
-        print(f"Email Sent YAY! This is the {counter}\n\n")
+        ezgmail.send(email,"",body)
+        print(f"Email Sent YAY! This is the {counter} email!!\n\n")
         counter += 1
         
 # Resets the DateTime variable of a message after it is sent out
@@ -70,7 +72,7 @@ def resetDateTime():
     global totalReminders
     temp = totalReminders
     for entry in temp:
-        if(entry["interval"] == "No Repeats"):
+        if(entry["interval"] == "No Repeats" and entry["timesSent"] != 0):
             temp.remove(entry)
         elif (entry["interval"] == "Every Minute"):
             entry["dateTime"] = entry["dateTime"] + datetime.timedelta(seconds=60)
@@ -95,13 +97,12 @@ def sendMessages():
     global totalReminders
     print(totalReminders)
     while True:
+        # Has program wait until a reminder has been created to send it out
         while(len(totalReminders) < 1):
-            time.sleep(1)    
-        print("\n\nSend messages function has been called!\n\n")
+            time.sleep(1)
         while(len(totalReminders) >= 1):
             try:
                 for entry in totalReminders:
-                    
                     print(entry)
                     print(entry["dateTime"])
                     currentTime = datetime.datetime.now(timezone)
@@ -117,7 +118,8 @@ def sendMessages():
                         currentTime = datetime.datetime.now(timezone)
                     
                     addPhoneToEmail(entry["phone"])
-                    sendText(entry["message"], entry["message"])
+                    sendText(entry["message"])
+                    entry["timesSent"] += 1
                     print(f"\n\nSent text {entry['message']} to {entry['phone']} phone number!\n\n")
                     print("\n\n This is right before resetDateTime()\n\n")
                     print(totalReminders)
@@ -131,18 +133,19 @@ def sendMessages():
 
 
 
-
+# Thread that will constantly be running the sendMessages function to send out messages
+# at their designated times
 sendOutThread = threading.Thread(target=sendMessages)
 sendOutThread.start()
 
 
-
+# When this file is called in the flaskApp.py file
 if __name__== '__main__':
-# Check if the JSON data is provided as a command-line argument
+# Check if the JSON input data is provided as a command-line argument
     if len(sys.argv) > 1:
-        json_data = sys.argv[1]  # Access the first command-line argument
+        json_data = sys.argv[1]  # Access the first command-line argument with input data
         
-        # Call the function to process the JSON data
+        # Call the function to process the JSON data and put it into totalReminders
         processDataInput(json_data)
     else:
         print("No data provided.")
