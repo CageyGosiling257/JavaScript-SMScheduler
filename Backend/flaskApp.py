@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, Request
+from flask import Flask, render_template, redirect, url_for, request, Request
 import flask
 import subprocess
 import threading
@@ -22,13 +22,13 @@ app = Flask(__name__, template_folder=templateFolder,
 
 totalData = [] # Stores a list of dictionaries user created reminders
 
-
 # Sends reminder information to smsGateway.py file to send out text messages
 def callSMSGateway():
     global totalData
     json_data = json.dumps(totalData)
     data_queue.put(json_data)
     subprocess.run(['python', 'smsGateway.py', json_data])
+    pass
     
 
 # Beginning app route that shows the original index.html file
@@ -55,10 +55,10 @@ def submit():
         # Only starts the thread that calls the smsGateway file if it has not already started
         if sendoutTextThread is None or not sendoutTextThread.is_alive():
             sendoutTextThread.start()
-    return display_table()
+    return redirect(url_for('display_table'))
 
 # Output app route that displays information relating to the reminders that user has created
-@app.route('/table')
+@app.route('/display_table')
 def display_table():
     global totalData
     app.logger.info('The table with the information has been loaded...')
