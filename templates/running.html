@@ -11,8 +11,9 @@
     <body>
          
       <h1>SMS Scheduler</h1>
+      <img src="/static/images/Smsbubbles.png" alt="SMS Text Bubbles">
+
       <!-- This is the code setting up all of the user input. It fires when user clicks submit button -->
-      
       <div id="phoneForm">
 
           <form action="http://localhost:5000/submit" method="POST">
@@ -36,7 +37,7 @@
               <br><br>
 
               <!-- Repeat interval input -->
-              <label for="interval">Enter the how often you would like your reminder to repeat.</label>
+              <label for="interval">Enter how often you would like your reminder to repeat.</label>
               <select name="interval" id="interval">
                   <option value="No Repeats">No Repeats</option>
                   <option value="Every Minute">Every Minute</option>
@@ -80,8 +81,6 @@
             
          </table>
       </div>
-
-      <button type="button" value="alerts!" id="alertButton">Alert me!</button>
 
     </body>
 

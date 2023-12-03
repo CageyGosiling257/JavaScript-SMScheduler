@@ -11,58 +11,58 @@
 
     <body>
 
+       
         <h1>SMS Scheduler</h1>
-        <!-- This is the code setting up all of the user input. It fires when user clicks submit button -->
+        <img src="/static/images/Smsbubbles.png" alt="SMS Text Bubbles" id="smsbubbles">
+
+        <div class="InputOutput">
         
-        <div id="inputForm">
+            <!-- This is the code setting up all of the user input. It fires when user clicks submit button -->
+            <div id="inputContainer" class="form">
 
-            <form id="myForm" action="http://localhost:5000/submit" method="POST">
-                <!-- Telephone Number Input -->
-                <label for="phoneNumber">Enter your phone number. Please do not include the '1' before your phone number:</label>
-                <input type="tel" id="phoneNumber" name="phoneNumber" pattern="[0-9]{10}" placeholder="1234567890"
-                required>
-                <br><br>
+                <form accept="http://localhost:5000/submit" id="inputForm"  method="post">
+                    <!-- Telephone Number Input -->
+                    <label for="phoneNumber">Enter your phone number. Please do not include the '1' before your phone number:</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" pattern="[0-9]{10}" placeholder="1234567890"
+                    required>
+                    <br><br>
 
-                <small>Format: 4230918735</small> <br><br>
-
-                <img src="" alt="">
-
+                    <small>Format: 4230918735</small> <br><br>
 
 
+                    <!-- Text Mesage Input -->
+                    <label for="message">Enter your text message:</label>
+                    <input type="text" id="message" name="message" placeholder="Text message text here." 
+                    required>
+                    <br><br>
 
-                <!-- Text Mesage Input -->
-                <label for="message">Enter your text message:</label>
-                <input type="text" id="message" name="message" placeholder="Text message text here." 
-                required>
-                <br><br>
+                    <!-- Date to send input -->
+                    <label for="datetimeInput">Enter the date when you would like your reminders to send.</label>
+                    <input type="datetime-local" id="datetimeInput" name="datetimeInput" required>
+                    <br><br>
 
-                <!-- Date to send input -->
-                <label for="datetimeInput">Enter the date when you would like your reminders to send.</label>
-                <input type="datetime-local" id="datetimeInput" name="datetimeInput" required>
-                <br><br>
+                    <!-- Repeat interval input -->
+                    <label for="interval">Enter how often you would like your reminder to repeat.</label>
+                    <select name="interval" id="interval">
+                        <option value="No Repeats">No Repeats</option>
+                        <option value="Every Minute">Every Minute</option>
+                        <option value="Every Hour">Every Hour</option>
+                        <option value="Every 12 Hours"> Every 12 Hours</option>
+                        <option value="Daily (24 Hours)">Daily (24 hours)</option>
+                        <option value="Every 2 days (48 hours)">Every 2 Days (48 hours)</option>
+                        <option value="Weekly (7 Days)">Weekly (7 Days)</option>
+                    </select>
+                    <br><br>
 
-                <!-- Repeat interval input -->
-                <label for="interval">Enter the how often you would like your reminder to repeat.</label>
-                <select name="interval" id="interval">
-                    <option value="No Repeats">No Repeats</option>
-                    <option value="Every Minute">Every Minute</option>
-                    <option value="Every Hour">Every Hour</option>
-                    <option value="Every 12 Hours"> Every 12 Hours</option>
-                    <option value="Daily (24 Hours)">Daily (24 hours)</option>
-                    <option value="Every 2 days (48 hours)">Every 2 Days (48 hours)</option>
-                    <option value="Weekly (7 Days)">Weekly (7 Days)</option>
-                </select>
-                <br><br>
+                    <button type="submit" value="submit" id="submit">Submit</button> 
+                </form>
+            </div>
 
-                <button type="submit" value="submit" on>Submit</button> 
-            </form>
+            <div class="Output">
+                <h2>Countdown until your next reminder!</h2>
 
 
-            <button id="alertButton">Alert me!</button>
-
-                
-            
-
+            </div>
         </div>
 <!-- pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}" -->
 
