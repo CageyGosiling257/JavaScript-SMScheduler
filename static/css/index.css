@@ -2,28 +2,58 @@ body {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     font-size: large;
     background-color: lightblue;
-}
-/* Creates the InputOutput flexbox */
-.InputOutput{
+  }
+  
+  /* CSS for the Top of page */
+  .header {
+    text-align: center;
+    image-rendering: auto;
+    color: maroon;
+  }
+  
+  #smsbubbles {
+    width: 300px;
+    height: 150px;
+    position: relative;
+    right: 150px;
+    bottom: 50px;
+  }
+  
+  #smstexts {
+    width: 300px;
+    height: 200px;
+    position: relative;
+    left: 100px;
+  }
+  
+  
+  /* Creates the InputOutput flexbox */
+  .InputOutput {
     display: flex;
-}
-
-/* This is an item within the InputOutput flexbox.  It is also 1 of 2 div classes */
-.form{
-    font-size: larger;
-    background-color: green;
-    display: flex;
-}
-
-/* .Output{
-
-} */
-
-.form #phoneNumber {
-    color: black;
-    background-color: violet;
-}
-
-.flexContainer1 div{
-    border: 4px solid brown;
-}
+  }
+  
+  /* Creates the input item inside of the InputOutput flexbox */
+  .input {
+    flex: 1;
+    color: maroon;
+  }
+  
+  .output {
+    flex: 1;
+    text-align: center;
+    color: maroon;
+  }
+  
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 2px solid maroon;
+  }
+  
+  th {
+    border: 1px solid maroon;
+  }
+  
+  td {
+    border: 1px solid maroon;
+  }

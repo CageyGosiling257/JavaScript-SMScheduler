@@ -1,18 +1,18 @@
 from flask import Flask, render_template, redirect, url_for, request, Request
 import flask
-import subprocess
-import threading
 import smsGateway
+import pytz
 import json
-from dataqueue import data_queue
 import logging
 import os
+
 
 currentFilePath = os.path.abspath(__file__) # Creates filepath for current file
 currentDirectory = os.path.dirname(currentFilePath) # Finds directory of the current file 
 staticFolder = os.path.join(currentDirectory,'..', 'static') # Finds path to static folder
 templateFolder = os.path.join(currentDirectory,'..', 'templates') # Finds path to the templates folder
-
+threadIsRunning = False # Sets flag to not create new thread to false at start of program
+timezone = pytz.timezone('US/Eastern')
 # Sets logging of flask file to debug so it can see
 logging.basicConfig(level=logging.DEBUG)
 
@@ -23,12 +23,9 @@ app = Flask(__name__, template_folder=templateFolder,
 totalData = [] # Stores a list of dictionaries user created reminders
 
 # Sends reminder information to smsGateway.py file to send out text messages
-def callSMSGateway():
-    global totalData
-    json_data = json.dumps(totalData)
-    data_queue.put(json_data)
-    subprocess.run(['python', 'smsGateway.py', json_data])
-    pass
+def callSMSGateway(dict):
+    json_data = json.dumps(dict)
+    smsGateway.startProgram(json=json_data)
     
 
 # Beginning app route that shows the original index.html file
@@ -41,6 +38,7 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     global totalData
+    global threadIsRunning
     app.logger.info('Form has been submitted!')
     if flask.request.method == 'POST':
         phone = flask.request.form['phoneNumber']
@@ -50,22 +48,19 @@ def submit():
         data = {"phone": phone, "message": message, "dateTime": dateTime, "interval":
                 interval, "timesSent": 0}
         totalData.append(data)
-        print(totalData)
         app.logger.info('The other python program has begun!')
-        # Only starts the thread that calls the smsGateway file if it has not already started
-        if sendoutTextThread is None or not sendoutTextThread.is_alive():
-            sendoutTextThread.start()
-    return redirect(url_for('display_table'))
+        callSMSGateway(data)
+        return render_template("index.html")
 
 # Output app route that displays information relating to the reminders that user has created
-@app.route('/display_table')
+@app.route('/get_table_data')
 def display_table():
     global totalData
+    tempData = totalData
     app.logger.info('The table with the information has been loaded...')
-    return render_template("running.html", data=totalData)
+    return tempData
 
 # Runs the program when the file is ran.
-if __name__ == '__main__':
-    sendoutTextThread = threading.Thread(target=callSMSGateway)
-    app.run(debug=True)
+if __name__ == '__main__':   
+    app.run(debug=False)
 

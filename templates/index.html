@@ -1,73 +1,76 @@
-<!-- This document will contain the HTML Layout for my JavaScript app -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="/static/css/index.css">
-        <script src="/static/js/index.js" defer></script>
-        <title>SMS Scheduler</title>
-    </head>
 
-    <body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/css/index.css">
+  <!-- <script src="/static/js/index.js" defer></script> -->
+  <title>SMS Scheduler</title>
+</head>
 
-       
-        <h1>SMS Scheduler</h1>
-        <img src="/static/images/Smsbubbles.png" alt="SMS Text Bubbles" id="smsbubbles">
+<body>
+  <div class="header">
+    <h1>SMS Scheduler</h1>
+    <img id="smsbubbles" src="/static/images/greentextbubblenbg.png" alt="SMS Text Bubbles">
+    <img id="smstexts" src="/static/images/Smsbubbles.png" alt="SMS Text Messaging">
+  </div>
 
-        <div class="InputOutput">
-        
-            <!-- This is the code setting up all of the user input. It fires when user clicks submit button -->
-            <div id="inputContainer" class="form">
+  <div class="InputOutput">
+    <!-- This is the code setting up all of the user input. It fires when user clicks submit button -->
+    <div class="input">
 
-                <form accept="http://localhost:5000/submit" id="inputForm"  method="post">
-                    <!-- Telephone Number Input -->
-                    <label for="phoneNumber">Enter your phone number. Please do not include the '1' before your phone number:</label>
-                    <input type="tel" id="phoneNumber" name="phoneNumber" pattern="[0-9]{10}" placeholder="1234567890"
-                    required>
-                    <br><br>
+      <form id="inputForm" action="/submit" method="post">
+        <!-- Telephone Number Input -->
+        <label for="phoneNumber">Enter your phone number:</label>
+        <input type="tel" id="phoneNumber" name="phoneNumber" pattern="[0-9]{10}" placeholder="1234567890" required>
+        <br><br>
 
-                    <small>Format: 4230918735</small> <br><br>
-
-
-                    <!-- Text Mesage Input -->
-                    <label for="message">Enter your text message:</label>
-                    <input type="text" id="message" name="message" placeholder="Text message text here." 
-                    required>
-                    <br><br>
-
-                    <!-- Date to send input -->
-                    <label for="datetimeInput">Enter the date when you would like your reminders to send.</label>
-                    <input type="datetime-local" id="datetimeInput" name="datetimeInput" required>
-                    <br><br>
-
-                    <!-- Repeat interval input -->
-                    <label for="interval">Enter how often you would like your reminder to repeat.</label>
-                    <select name="interval" id="interval">
-                        <option value="No Repeats">No Repeats</option>
-                        <option value="Every Minute">Every Minute</option>
-                        <option value="Every Hour">Every Hour</option>
-                        <option value="Every 12 Hours"> Every 12 Hours</option>
-                        <option value="Daily (24 Hours)">Daily (24 hours)</option>
-                        <option value="Every 2 days (48 hours)">Every 2 Days (48 hours)</option>
-                        <option value="Weekly (7 Days)">Weekly (7 Days)</option>
-                    </select>
-                    <br><br>
-
-                    <button type="submit" value="submit" id="submit">Submit</button> 
-                </form>
-            </div>
-
-            <div class="Output">
-                <h2>Countdown until your next reminder!</h2>
+        <small>Please enter your phone number like the following: '4235679187'</small> <br><br>
 
 
-            </div>
-        </div>
-<!-- pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}" -->
+        <!-- Text Mesage Input -->
+        <label for="message">Enter your text message:</label>
+        <input type="text" id="message" name="message" placeholder="Text message text here." required>
+        <br><br>
 
-    </body>
+        <!-- Date to send input -->
+        <label for="datetimeInput">Enter the date when you would like your reminders to send.</label>
+        <input type="datetime-local" id="datetimeInput" name="datetimeInput" required>
+        <br><br>
 
+        <!-- Repeat interval input -->
+        <label for="interval">Enter how often you would like your reminder to repeat.</label>
+        <select name="interval" id="interval">
+          <option value="No Repeats">No Repeats</option>
+          <option value="Every Minute">Every Minute</option>
+          <option value="Every Hour">Every Hour</option>
+          <option value="Every 12 Hours"> Every 12 Hours</option>
+          <option value="Daily (24 Hours)">Daily (24 hours)</option>
+          <option value="Every 2 days (48 hours)">Every 2 Days (48 hours)</option>
+          <option value="Weekly (7 Days)">Weekly (7 Days)</option>
+        </select>
+        <br><br>
 
+        <button type="submit" value="submit">Submit</button>
+      </form>
+    </div>
+
+    <div class="output">
+      <div id="countdowns">
+
+      </div>
+
+      <div id="table">
+        <table>
+
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Displays table and resets input fields -->
+  <script src="/static/js/index.js" defer></script>
+</body>
 
 </html>

@@ -1,55 +1,60 @@
 # This file will test sending sms messages through Email Gateways
-import os
 import ezgmail
 import ezsheets
 import threading
 import json
 import datetime
+from datetime import timedelta, datetime
 import pytz
 import time
-import sys
-from dataqueue import data_queue
+import os
 
-# Child directory to create API tokens
 os.chdir(r'/home/dfreeman/Desktop/SMSScheduler/JavaScript-SMScheduler/Backend')
+
 
 # Creates spreadsheet that contains data for SMS Gateway Emails
 ss = ezsheets.Spreadsheet('1YhI6SSaoHEAPsxS8Qnea_tZ9EpOeN-zbLJB6ho8I9lE')
-
 SMSList = ss[0] # Creates specific sheet
-
 unfilteredCarrierEmails = SMSList.getColumn(4) # Retreives column of carrier emails
-
 filteredUSCarrierEmails = [] # Stores cells containing only U.S.A carriers
-
 filteredSMSList = [] # Holds list of U.S. carrier emails containing user's phone number
-
 cell = 251 # Cell row number with 1st U.S. number
-
-# Creates Eastern timezone for times
 timezone = pytz.timezone('US/Eastern')
 
 # List that holds input data containing information about the reminder from the website
 totalReminders = []
+sortedTotalReminders = []
+isThreadRunning = False
+sendOutThread = None
 
 # Filters column 4 to only include U.S. Carriers
 while (cell < 337):
     filteredUSCarrierEmails.append(unfilteredCarrierEmails[cell])
     cell += 1
 
-# Retrieves data input and stores it in totalReminders so it can be used across the file
+# Retrieves json data from user, converts the dateTime str to dateTime object, sorts list of reminders
+# based on their dateTime objects.
 def processDataInput(jsonData):
     global totalReminders
-    totalReminders = json.loads(jsonData) # Input json data is turned into a list of dictionaries
+    global sortedTotalReminders
+    tempData = json.loads(jsonData) # Input json data is turned into a list of dictionaries
+    dateTimeFormat ='%Y-%m-%dT%H:%M'
+    naiveReminderDateTime = datetime.strptime(tempData["dateTime"], dateTimeFormat)
+    tempData["dateTime"] = timezone.localize(naiveReminderDateTime)
+    totalReminders.append(tempData)
+    sortedTotalReminders = sortTotalReminders(totalReminders)
+    print(sortedTotalReminders, "\n\nThis is processDataInput\n\n")
 
 
-# Sorts the dynamic list of reminders by dateTime
-def sortTotalReminders():
-    global totalReminders
-    sorted(totalReminders, key=lambda x: (x['dateTime']))
+# Sorts the dynamic list of reminders by dateTime by converting dateTime strings in dateTime objects
+def sortTotalReminders(reminders):
+    sortedTotalReminders = sorted(reminders, key=lambda x: abs((x["dateTime"] - datetime.now(timezone))))
+    return sortedTotalReminders
 
 # Applies inputted phone number to SMSGateway email
 def addPhoneToEmail(phone):
+    global filteredSMSList
+    filteredSMSList = [] # Clears SMSList to prevent duplicate carrier emails
     for carrier in filteredUSCarrierEmails:
         if(carrier.startswith("##########")):
             carrierEmail = phone + carrier[10:]
@@ -59,7 +64,7 @@ def addPhoneToEmail(phone):
 # Adds user's phone number to SMS email and then sends the SMS email      
 def sendText (body):
     counter = 0
-    
+    global filteredSMSList
     # Sends email to SMS carriers
     for email in filteredSMSList:
         print(email)
@@ -69,86 +74,59 @@ def sendText (body):
         
 # Resets the DateTime variable of a message after it is sent out
 def resetDateTime():
-    global totalReminders
-    temp = totalReminders
+    global sortedTotalReminders
+    temp = sortedTotalReminders
     for entry in temp:
         if(entry["interval"] == "No Repeats" and entry["timesSent"] != 0):
             temp.remove(entry)
         elif (entry["interval"] == "Every Minute"):
-            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(seconds=60)
+            entry["dateTime"] = entry["dateTime"] + timedelta(seconds=60)
         elif (entry["interval"] == "Every Hour"):
-            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(minutes=60)
+            entry["dateTime"] = entry["dateTime"] + timedelta(minutes=60)
         elif (entry["interval"] == "Every 12 Hours"):
-            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(hours=12)
+            entry["dateTime"] = entry["dateTime"] + timedelta(hours=12)
         elif (entry["interval"] == "Daily (24 Hours)"):
-            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(hours=24)
+            entry["dateTime"] = entry["dateTime"] + timedelta(hours=24)
         elif (entry["interval"] == "Every 2 days (48 hours)"):
-            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(hours=48)
+            entry["dateTime"] = entry["dateTime"] + timedelta(hours=48)
         elif (entry["interval"] == "Weekly (7 Days)"):
-            entry["dateTime"] = entry["dateTime"] + datetime.timedelta(days=7)
+            entry["dateTime"] = entry["dateTime"] + timedelta(days=7)
             
     # Resets value of totalReminders to edited vals
-    totalReminders = temp    
+    sortedTotalReminders = temp    
     
     
 
 # Sends out text message for each reminder that the user creates
 def sendMessages():
-    global totalReminders
-    print(totalReminders)
+    global sortedTotalReminders
     while True:
-        # Has program wait until a reminder has been created to send it out
-        while(len(totalReminders) < 1):
-            time.sleep(1)
-        while(len(totalReminders) >= 1):
-            try:
-                for entry in totalReminders:
-                    print(entry)
-                    print(entry["dateTime"])
-                    currentTime = datetime.datetime.now(timezone)
-                    print(currentTime)
-                    dateTimeFormat ='%Y-%m-%dT%H:%M'
-                    naiveReminderDateTime = datetime.datetime.strptime(entry["dateTime"], dateTimeFormat)
-                    reminderDateTime = timezone.localize(naiveReminderDateTime)
-                    print(reminderDateTime)
-                    print(totalReminders)
-                    # Has thread wait to send out texts until it is time
-                    while(currentTime < reminderDateTime):
-                        time.sleep(1)
-                        currentTime = datetime.datetime.now(timezone)
-                    
+        try:
+            if not sortedTotalReminders:
+                break  # Break the loop if there are no more reminders
+
+            currentTime = datetime.now(timezone)
+            for entry in sortedTotalReminders[:]:  # Loop over a copy of the list
+                reminderDateTime = entry["dateTime"]
+
+                if currentTime >= reminderDateTime:
                     addPhoneToEmail(entry["phone"])
                     sendText(entry["message"])
                     entry["timesSent"] += 1
                     print(f"\n\nSent text {entry['message']} to {entry['phone']} phone number!\n\n")
-                    print("\n\n This is right before resetDateTime()\n\n")
-                    print(totalReminders)
                     resetDateTime()
-                    print("\n\nThis is right before sortTotalReminders()\n\n")
-                    print(totalReminders)
-                    sortTotalReminders()
-                    print(totalReminders)
-            except:
-                continue
+                    sortedTotalReminders = sortTotalReminders(sortedTotalReminders)
 
+            time.sleep(1)
+        except Exception as e:
+            print(f"Error in sendMessages: {e}")
 
-
-# Thread that will constantly be running the sendMessages function to send out messages
-# at their designated times
-sendOutThread = threading.Thread(target=sendMessages)
-sendOutThread.start()
-
-
-# When this file is called in the flaskApp.py file
-if __name__== '__main__':
-# Check if the JSON input data is provided as a command-line argument
-    if len(sys.argv) > 1:
-        json_data = sys.argv[1]  # Access the first command-line argument with input data
-        
-        # Call the function to process the JSON data and put it into totalReminders
-        processDataInput(json_data)
-    else:
-        print("No data provided.")
-
-
-
+# Takes input json and creates thread to process it and send messages
+def startProgram(json):
+    global isThreadRunning
+    global sendOutThread
+    processDataInput(json)
+    if(not isThreadRunning):
+        sendOutThread = threading.Thread(target=sendMessages)
+        sendOutThread.start()
+        isThreadRunning = True
