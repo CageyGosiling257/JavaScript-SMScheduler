@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/static/css/index.css">
-  <!-- <script src="/static/js/index.js" defer></script> -->
   <title>SMS Scheduler</title>
 </head>
 
@@ -20,7 +19,7 @@
     <!-- This is the code setting up all of the user input. It fires when user clicks submit button -->
     <div class="input">
 
-      <form id="inputForm" action="/submit" method="post">
+      <form id="inputForm" action="/submit" method="post" onsubmit="return validateForm()">
         <!-- Telephone Number Input -->
         <label for="phoneNumber">Enter your phone number:</label>
         <input type="tel" id="phoneNumber" name="phoneNumber" pattern="[0-9]{10}" placeholder="1234567890" required>
@@ -71,6 +70,42 @@
 
   <!-- Displays table and resets input fields -->
   <script src="/static/js/index.js" defer></script>
+  <!-- Validates the user input -->
+  <script>
+    function validateForm() {
+      // Phone number validation
+      const phoneNumber = document.getElementById('phoneNumber').value;
+      const phoneNumberPattern = /^[0-9]{10}$/;
+      if (!phoneNumberPattern.test(phoneNumber)) {
+        alert('Please enter a valid phone number with 10 digits.');
+        return false;
+      }
+
+      // Message validation
+      const message = document.getElementById('message').value;
+      if(message.trim() === '') {
+        alert('Please fill in the message field with your message.');
+        return false;
+      }
+
+      // DateTime validation
+      const inputDateTime = document.getElementById('datetimeInput');
+      const now = new Date();
+      if(now - inputDateTime >= 0) {
+        alert('Please select a dateTime that is at least 1 minute in the future.');
+        return false;
+      }
+
+      // Repeat Dropdown validation
+      const repeatInterval = document.getElementById('interval').value;
+      if(repeatInterval === '') {
+        alert('Please select a repeat interval from the dropdown.');
+        return false;
+      }
+
+      return true; // If all validations pass, the form will be submitted
+    }
+  </script>
 </body>
 
 </html>

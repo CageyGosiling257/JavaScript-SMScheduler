@@ -1,24 +1,16 @@
-from flask import Flask, render_template, redirect, url_for, request, Request
+from flask import Flask, render_template
 import flask
 import smsGateway
 import pytz
 import json
 import logging
-import os
 
-
-currentFilePath = os.path.abspath(__file__) # Creates filepath for current file
-currentDirectory = os.path.dirname(currentFilePath) # Finds directory of the current file 
-staticFolder = os.path.join(currentDirectory,'..', 'static') # Finds path to static folder
-templateFolder = os.path.join(currentDirectory,'..', 'templates') # Finds path to the templates folder
-threadIsRunning = False # Sets flag to not create new thread to false at start of program
 timezone = pytz.timezone('US/Eastern')
 # Sets logging of flask file to debug so it can see
 logging.basicConfig(level=logging.DEBUG)
 
 # Creates flask app to allow communication between website and Backend logic
-app = Flask(__name__, template_folder=templateFolder, 
-            static_folder=staticFolder, static_url_path='/static')
+app = Flask(__name__, static_url_path='/static')
 
 totalData = [] # Stores a list of dictionaries user created reminders
 
@@ -38,7 +30,6 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     global totalData
-    global threadIsRunning
     app.logger.info('Form has been submitted!')
     if flask.request.method == 'POST':
         phone = flask.request.form['phoneNumber']

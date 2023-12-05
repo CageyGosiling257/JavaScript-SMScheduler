@@ -7,10 +7,8 @@ import datetime
 from datetime import timedelta, datetime
 import pytz
 import time
-import os
 
-os.chdir(r'/home/dfreeman/Desktop/SMSScheduler/JavaScript-SMScheduler/Backend')
-
+ezsheets.init()
 
 # Creates spreadsheet that contains data for SMS Gateway Emails
 ss = ezsheets.Spreadsheet('1YhI6SSaoHEAPsxS8Qnea_tZ9EpOeN-zbLJB6ho8I9lE')
@@ -102,7 +100,7 @@ def sendMessages():
     global sortedTotalReminders
     while True:
         try:
-            if not sortedTotalReminders:
+            if len(sortedTotalReminders) < 1:
                 break  # Break the loop if there are no more reminders
 
             currentTime = datetime.now(timezone)
