@@ -38,22 +38,36 @@ body {
     color: maroon;
   }
   
+  /* Creates the output item inside of the InputOutput flexbox */
   .output {
     flex: 1;
     text-align: center;
     color: maroon;
   }
   
+  /* Adjusts the table that is created from User input */
   table {
     border-collapse: collapse;
     width: 100%;
     border: 2px solid maroon;
   }
+
+  #submitButton {
+    width: 80px;
+    height: 35px;
+    color: maroon;
+    border-color: blue;
+    border-radius: 2px;
+    background-color: cyan;
+    font-weight: bold;
+  }
   
+  /* Adjusts the table header */
   th {
     border: 1px solid maroon;
   }
   
+  /* Adjusts each cell in the table */
   td {
     border: 1px solid maroon;
   }

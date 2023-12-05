@@ -7,16 +7,15 @@ import datetime
 from datetime import timedelta, datetime
 import pytz
 import time
-
-ezsheets.init()
+import re
 
 # Creates spreadsheet that contains data for SMS Gateway Emails
 ss = ezsheets.Spreadsheet('1YhI6SSaoHEAPsxS8Qnea_tZ9EpOeN-zbLJB6ho8I9lE')
-SMSList = ss[0] # Creates specific sheet
-unfilteredCarrierEmails = SMSList.getColumn(4) # Retreives column of carrier emails
-filteredUSCarrierEmails = [] # Stores cells containing only U.S.A carriers
-filteredSMSList = [] # Holds list of U.S. carrier emails containing user's phone number
-cell = 251 # Cell row number with 1st U.S. number
+SMSList = ss[0] 
+unfilteredCarrierEmails = SMSList.getColumn(4) 
+filteredUSCarrierEmails = [] 
+filteredSMSList = [] 
+cell = 251 
 timezone = pytz.timezone('US/Eastern')
 
 # List that holds input data containing information about the reminder from the website
@@ -30,6 +29,40 @@ while (cell < 337):
     filteredUSCarrierEmails.append(unfilteredCarrierEmails[cell])
     cell += 1
 
+
+###########################################
+# BEGINNING OF THE FUNCTION DEFINITIONS   #
+###########################################
+
+# Validates user inputs by not adding a reminder to the list of reminders
+def validateInputs(dictionary):
+    # Checks if the input phone number exists in the correct form
+    pattern = r'^[0-9]{10}$'
+    phoneRegex = re.compile(pattern)
+    if(not phoneRegex.match(dictionary["phone"])):
+        return False
+    
+    # Checks if the input message exists
+    if(len(dictionary["message"].strip()) < 1):
+        return False
+    
+    # Checks if the datetimeInput is in the past
+    dateTimeFormat ='%Y-%m-%dT%H:%M'
+    naiveTestingDateTime = datetime.strptime(dictionary["dateTime"], dateTimeFormat)
+    testingDateTime = timezone.localize(naiveTestingDateTime)
+    currentTime = datetime.now(timezone)
+    if(testingDateTime <= currentTime):
+        return False
+    
+    # Checks if the user selected a repeat interval
+    if(len(dictionary["interval"].strip()) < 1):
+        return False
+    
+    # If all checks pass, return true
+    return True
+        
+
+
 # Retrieves json data from user, converts the dateTime str to dateTime object, sorts list of reminders
 # based on their dateTime objects.
 def processDataInput(jsonData):
@@ -41,13 +74,14 @@ def processDataInput(jsonData):
     tempData["dateTime"] = timezone.localize(naiveReminderDateTime)
     totalReminders.append(tempData)
     sortedTotalReminders = sortTotalReminders(totalReminders)
-    print(sortedTotalReminders, "\n\nThis is processDataInput\n\n")
+    print("These are the sorted reminders:", sortedTotalReminders)
 
 
 # Sorts the dynamic list of reminders by dateTime by converting dateTime strings in dateTime objects
 def sortTotalReminders(reminders):
     sortedTotalReminders = sorted(reminders, key=lambda x: abs((x["dateTime"] - datetime.now(timezone))))
     return sortedTotalReminders
+
 
 # Applies inputted phone number to SMSGateway email
 def addPhoneToEmail(phone):
@@ -67,8 +101,9 @@ def sendText (body):
     for email in filteredSMSList:
         print(email)
         ezgmail.send(email,"",body)
-        print(f"Email Sent YAY! This is the {counter} email!!\n\n")
+        print(f"Email Sent! This is the {counter} email.\n\n")
         counter += 1
+        
         
 # Resets the DateTime variable of a message after it is sent out
 def resetDateTime():
@@ -77,8 +112,8 @@ def resetDateTime():
     for entry in temp:
         if(entry["interval"] == "No Repeats" and entry["timesSent"] != 0):
             temp.remove(entry)
-        elif (entry["interval"] == "Every Minute"):
-            entry["dateTime"] = entry["dateTime"] + timedelta(seconds=60)
+        elif (entry["interval"] == "Every 10 Minutes"):
+            entry["dateTime"] = entry["dateTime"] + timedelta(minutes=10)
         elif (entry["interval"] == "Every Hour"):
             entry["dateTime"] = entry["dateTime"] + timedelta(minutes=60)
         elif (entry["interval"] == "Every 12 Hours"):
@@ -111,13 +146,14 @@ def sendMessages():
                     addPhoneToEmail(entry["phone"])
                     sendText(entry["message"])
                     entry["timesSent"] += 1
-                    print(f"\n\nSent text {entry['message']} to {entry['phone']} phone number!\n\n")
+                    print(f"\n\nSent reminder {entry['message']} to {entry['phone']} phone number!\n\n")
                     resetDateTime()
                     sortedTotalReminders = sortTotalReminders(sortedTotalReminders)
 
             time.sleep(1)
         except Exception as e:
             print(f"Error in sendMessages: {e}")
+
 
 # Takes input json and creates thread to process it and send messages
 def startProgram(json):

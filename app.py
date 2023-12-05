@@ -15,8 +15,8 @@ app = Flask(__name__, static_url_path='/static')
 totalData = [] # Stores a list of dictionaries user created reminders
 
 # Sends reminder information to smsGateway.py file to send out text messages
-def callSMSGateway(dict):
-    json_data = json.dumps(dict)
+def callSMSGateway(dictionary):
+    json_data = json.dumps(dictionary)
     smsGateway.startProgram(json=json_data)
     
 
@@ -39,19 +39,22 @@ def submit():
         data = {"phone": phone, "message": message, "dateTime": dateTime, "interval":
                 interval, "timesSent": 0}
         totalData.append(data)
-        app.logger.info('The other python program has begun!')
-        callSMSGateway(data)
-        return render_template("index.html")
+        if(smsGateway.validateInputs(data)):
+            app.logger.info("Reminder added to list!")
+            callSMSGateway(data)
+            return render_template("index.html")
+        else :
+            return render_template("index.html")
 
 # Output app route that displays information relating to the reminders that user has created
 @app.route('/get_table_data')
 def display_table():
     global totalData
     tempData = totalData
-    app.logger.info('The table with the information has been loaded...')
+    app.logger.info('Reminder metadata sentout.')
     return tempData
 
 # Runs the program when the file is ran.
 if __name__ == '__main__':   
-    app.run(debug=False)
+    app.run(debug=True)
 

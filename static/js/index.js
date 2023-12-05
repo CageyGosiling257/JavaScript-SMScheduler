@@ -3,6 +3,45 @@ function resetInputs() {
     document.getElementById('inputForm').reset();
 }
 
+
+// Validates the form to ensure inputs were entered correctly
+function validateForm() {
+
+  // Phone number validation
+  const phoneNumber = document.getElementById('phoneNumber').value;
+  const phoneNumberPattern = /^[0-9]{10}$/;
+  if (!phoneNumberPattern.test(phoneNumber)) {
+    alert('Please enter a valid phone number with 10 digits.');
+    return false;
+  }
+
+  // Message validation
+  const message = document.getElementById('message').value;
+  if(message.trim() === '') {
+    alert('Please fill in the message field with your message.');
+    return false;
+  }
+
+  // DateTime validation
+  const inputDateTimeValue = document.getElementById('datetimeInput').value;
+  const inputDateTime = new Date(inputDateTimeValue);
+  const now = new Date();
+  if(now - inputDateTime >= 0) {
+    alert('Please select a dateTime that is at least 1 minute in the future.');
+    return false;
+  }
+
+  // Repeat Dropdown validation
+  const repeatInterval = document.getElementById('interval').value;
+  if(repeatInterval === '') {
+    alert('Please select a repeat interval from the dropdown.');
+    return false;
+  }
+
+  return true; // If all validations pass, the form will be submitted
+}
+
+
 // Function that compares the dates of datetime entries and returns the difference
 function compareDates(list) {
     const now = new Date(); // Current date and time
@@ -22,11 +61,19 @@ function compareDates(list) {
 }
 
 
+
+/*
+BEGINNING OF FUNCTION CALLS THAT MAKE PROGRAM WORK
+*/
+
+
 // Performs JS operations after the page has loaded
 document.addEventListener('DOMContentLoaded', function() {
     titleAdded = false; // Check to see if the Table title has been added
   
-    function updateTableAndCountdown() {
+    // Displays the user-created reminders to the screen in the form of a table
+    // from the soonest reminder to the one farthest away.
+    function displayReminders() {
       fetch('/get_table_data')
         .then(response => response.json())
         .then(data => {
@@ -35,7 +82,6 @@ document.addEventListener('DOMContentLoaded', function() {
             data = sortedData;
             console.log(data);
             updateTable(data); // Update table with sorted reminders
-            startCountdown(data); // Start the countdown with the sorted reminders
         })
         .catch(error => {
             console.error('Error fetching table data:', error);
@@ -43,26 +89,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
   
-    // Event listener waits for User Input to display table
+    // Event listener waits for the user to click the submit button to display the table
     document.getElementById('inputForm').addEventListener('submit', function(event) {
       event.preventDefault();
-  
-      // Perform the form submission via AJAX/fetch to trigger Flask route
-      fetch('/submit', {
-        method: 'POST',
-        body: new FormData(document.getElementById('inputForm'))
-      })
-        .then(response => {
-          // Optionally handle response if needed
-          console.log('Form submitted successfully');
-          updateTableAndCountdown(); // Call to update table and countdown for the function
+
+      // Checks to see if the inputs were validated. If so, function continues, if not
+      // the function alerts the user and the inputs are reset.
+      if(validateForm()) {
+
+        // Uses AJAX to add a reminder to the reminders list when the user submits a form.
+        fetch('/submit', {
+          method: 'POST',
+          body: new FormData(document.getElementById('inputForm'))
         })
-        .catch(error => {
-          // Handle errors if any
-          console.error('Error submitting form:', error);
-        });
+          .then(response => {
+            // Optionally handle response if needed
+            console.log('Form submitted successfully');
+            displayReminders(); // Call to update table and countdown for the function
+          })
+          .catch(error => {
+            // Handles any errors
+            console.error('Error submitting form:', error);
+          });
+      } else {
+        alert('Please enter valid user inputs.');
+        resetInputs();
+      }
     });
   
+    // Creates and displays a table on screen that contains the user-created reminders
     function updateTable() {
         fetch('/get_table_data')  // Fetch data from the Flask route
         .then(response => response.json())
@@ -97,16 +152,17 @@ document.addEventListener('DOMContentLoaded', function() {
   
             tableHead.appendChild(headRow); // Creates the table head with the table row entries
             table.appendChild(tableHead);
+
             // Creates the table body
             const tableBody = document.createElement('tbody');
             data.forEach(row => {
-            const bodyRow = document.createElement('tr');
-            // Create table cells for each data entry
-            Object.values(row).forEach(cellData => {
-                const td = document.createElement('td');
-                td.textContent = cellData;
-                bodyRow.appendChild(td);
-            });
+              const bodyRow = document.createElement('tr');
+              // Creates the table cells with their data for each row
+              Object.values(row).forEach(cellData => {
+                  const td = document.createElement('td');
+                  td.textContent = cellData;
+                  bodyRow.appendChild(td);
+              });
             tableBody.appendChild(bodyRow); // Creates the table body made up of each row
           });
           table.appendChild(tableBody); // Adds the table body to the table

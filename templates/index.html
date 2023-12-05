@@ -9,24 +9,32 @@
 </head>
 
 <body>
+  <!-- Displays title of webpage and 2 images -->
   <div class="header">
     <h1>SMS Scheduler</h1>
     <img id="smsbubbles" src="/static/images/greentextbubblenbg.png" alt="SMS Text Bubbles">
     <img id="smstexts" src="/static/images/Smsbubbles.png" alt="SMS Text Messaging">
   </div>
 
+  <!-- Class that contains code for input/output of the website -->
   <div class="InputOutput">
-    <!-- This is the code setting up all of the user input. It fires when user clicks submit button -->
-    <div class="input">
 
+    <!-- Sets up and responds to user input. Fires when user clicks submit button -->
+    <div class="input">
+      <h2>Welcome to the SMS Scheduler</h2>
+      <h3>Please fill out the fields below and click the submit button to create your reminder
+        and have it texted to you.
+      </h3>
+      <!-- Form created out user's inputs form 4 fields of website -->
       <form id="inputForm" action="/submit" method="post" onsubmit="return validateForm()">
+        
         <!-- Telephone Number Input -->
         <label for="phoneNumber">Enter your phone number:</label>
         <input type="tel" id="phoneNumber" name="phoneNumber" pattern="[0-9]{10}" placeholder="1234567890" required>
         <br><br>
 
-        <small>Please enter your phone number like the following: '4235679187'</small> <br><br>
-
+        <small>Please enter your phone number like the following: '4235679187'</small> 
+        <br><br>
 
         <!-- Text Mesage Input -->
         <label for="message">Enter your text message:</label>
@@ -42,7 +50,7 @@
         <label for="interval">Enter how often you would like your reminder to repeat.</label>
         <select name="interval" id="interval">
           <option value="No Repeats">No Repeats</option>
-          <option value="Every Minute">Every Minute</option>
+          <option value="Every 10 Minutes">Every 10 Minutes</option>
           <option value="Every Hour">Every Hour</option>
           <option value="Every 12 Hours"> Every 12 Hours</option>
           <option value="Daily (24 Hours)">Daily (24 hours)</option>
@@ -51,7 +59,7 @@
         </select>
         <br><br>
 
-        <button type="submit" value="submit">Submit</button>
+        <button type="submit" value="submit" id="submitButton">Submit</button>
       </form>
     </div>
 
@@ -70,42 +78,7 @@
 
   <!-- Displays table and resets input fields -->
   <script src="/static/js/index.js" defer></script>
-  <!-- Validates the user input -->
-  <script>
-    function validateForm() {
-      // Phone number validation
-      const phoneNumber = document.getElementById('phoneNumber').value;
-      const phoneNumberPattern = /^[0-9]{10}$/;
-      if (!phoneNumberPattern.test(phoneNumber)) {
-        alert('Please enter a valid phone number with 10 digits.');
-        return false;
-      }
 
-      // Message validation
-      const message = document.getElementById('message').value;
-      if(message.trim() === '') {
-        alert('Please fill in the message field with your message.');
-        return false;
-      }
-
-      // DateTime validation
-      const inputDateTime = document.getElementById('datetimeInput');
-      const now = new Date();
-      if(now - inputDateTime >= 0) {
-        alert('Please select a dateTime that is at least 1 minute in the future.');
-        return false;
-      }
-
-      // Repeat Dropdown validation
-      const repeatInterval = document.getElementById('interval').value;
-      if(repeatInterval === '') {
-        alert('Please select a repeat interval from the dropdown.');
-        return false;
-      }
-
-      return true; // If all validations pass, the form will be submitted
-    }
-  </script>
 </body>
 
 </html>
