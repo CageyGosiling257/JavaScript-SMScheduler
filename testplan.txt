@@ -1,0 +1,74 @@
+This is the test plan for my SMScheduler Project
+
+Tests for index.js
+
+
+1. Function: validateForm()
+
+    1. Passing Case
+    User Inputs:
+        phoneNumber = '7706174970'
+        message = 'This is a message.'
+        inputDateTimeValue = 'Dec 06 2023 08:00'
+        repeatInterval = 'Every Hour'
+
+    Result: True
+
+    2. Phone Fail Case
+    User Inputs:
+        phoneNumber = '7928ki0'
+        message = 'This is a message.'
+        inputDateTimeValue = 'Dec 06 2023 08:00'
+        repeatInterval = 'Every Hour'
+    
+    Error: Phone number in wrong format
+    Result: False
+
+    3. Message Fail Case
+    User Inputs:
+        phoneNumber = '7706174970'
+        message = ''
+        inputDateTimeValue = 'Dec 06 2023 08:00'
+        repeatInterval = 'Every Hour'
+
+    Error: Message field empty
+    Result: False
+
+    4. Datetime Fail Case
+    User Inputs:
+        phoneNumber = '7706174970'
+        message = 'This is a test.'
+        inputDateTimeValue = 'Dec 06 1999 08:00'
+        repeatInterval = 'Every Hour'
+
+    Error: Datetime is in the past
+    Result: False
+
+2. Function resetInputs()
+    User Input:
+        *User fills in all form fields and presses submit*
+    
+    Result: *Fields are reset as empty*
+
+3. Function compareDates(list)
+
+    1. Passing Case
+    User Input:
+        *User inputs a list of reminders with correct dateTime field values*
+
+    Result: The inputted list of reminders is sorted from dateTime closest to now
+            to farthest away.
+
+    2. No list provided
+    User Input:
+        *User fails to provide a list of reminders*
+    
+    Result: The test fails.
+
+
+4. User does not fill out all form fields in the HTML
+    
+    Result: The HTML prevents the user from clicking the submit button until he/she fills
+            fills out all form fields.  Also, the validateForm() function triggers and 
+            alerts the user of the fields they need to fill out.
+

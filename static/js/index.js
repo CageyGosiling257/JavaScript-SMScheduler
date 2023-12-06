@@ -175,4 +175,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
   });
-  
